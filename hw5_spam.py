@@ -24,8 +24,8 @@ class Tree:
 
 	def build_tree(self, elements):
 		for i in range(0,32):
-			s_i = elements
-			mat = [elements[:,i].argsort()]
+			mat = elements[elements[:,i].argsort()]
+
 			uniq = np.unique(mat.T[i])
 			print uniq
 			1/0
