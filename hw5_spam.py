@@ -8,8 +8,10 @@ train_set = loadmat(file_name="spam-dataset/spam_data.mat")
 labels = train_set['training_labels'].ravel()
 X = train_set['training_data']
 X = np.float64(np.copy(X))
-
-xmax= X.max(axis=0)
+print X.shape
+print labels.shape
+X_p = np.concatenate((X,labels[:,None]), 1)
+xmax= X_p.max(axis=0)
 print xmax
 t = "i8"
 for i in range(1,32):
@@ -25,7 +27,13 @@ class Tree:
 	def build_tree(self, elements):
 		for i in range(0,32):
 			mat = elements[elements[:,i].argsort()]
-
 			uniq = np.unique(mat.T[i])
-			print uniq
-			1/0
+			for j in range(0,len(uniq)-1):
+				res = np.nonzero(mat.T[i] == uniq[j])
+				last_index = res[len(res)-1][0]
+				split1,split2 = X_p[:last_index+1], X_p[last_index+1:]
+				print split1.shape
+				print split2.shape
+				print res
+				1/0
+			
