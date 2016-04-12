@@ -30,10 +30,10 @@ class Tree:
 			uniq = np.unique(mat.T[i])
 			for j in range(0,len(uniq)-1):
 				res = np.nonzero(mat.T[i] == uniq[j])
-				last_index = res[len(res)-1][0]
+				last_index = res[0][len(res[0])-1]
 				split1,split2 = X_p[:last_index+1], X_p[last_index+1:]
 				print split1.shape
 				print split2.shape
 				print res
-				1/0
+			1/0
 			
