@@ -81,3 +81,26 @@ class Tree:
 		right = temp.build_tree(X_2)
 		print feature, split
 		return Tree(feature, split, left, right)	
+
+def lookup(tree, item):
+	if tree.right_node == None and tree.left_node == None:
+		return tree.feature	
+	if item[tree.feature] <= tree.split:
+		return lookup(tree.left_node,item)
+	return lookup(tree.right_node,item)
+
+def validation_spam_regTree():
+	np.random.shuffle(X_p)
+	train = X_p[0:4000]
+	validation = X_p[4000:]
+	t = Tree(1,2,3,4).build_tree(train)
+	correct = 0
+	total = 0
+	for el in validation:
+		total +=1 
+		correct += (lookup(t,el) == el[32])
+	print correct, total
+
+def kaggle_spam_regTree_csv():
+	t = Tree(1,2,3,4).build_tree(X_p)
+	
