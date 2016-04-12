@@ -26,8 +26,7 @@ class Tree:
 
 
 	def build_tree(self, elements):
-		print np.bincount(elements.T[32])
-		if len(np.bincount(elements.T[32])) == 1:
+		if 0 in np.bincount(elements.T[32]) or len(np.bincount(elements.T[32])) == 1:
 			print "=============END REACHED=========="
 			return Tree(elements.T[32][0], 0, None, None)
 		feature, split = -1,-1
@@ -36,8 +35,6 @@ class Tree:
 		for i in range(0,32):
 			mat = elements[elements[:,i].argsort()]
 			uniq = np.unique(mat.T[i])
-			print "i: " + str(i)
-			print "uniq: " + str(uniq)
 			for j in range(0,len(uniq)-1):
 				res = np.nonzero(mat.T[i] == uniq[j])
 				last_index = res[0][len(res[0])-1]
@@ -48,7 +45,6 @@ class Tree:
 				pre_split_bins = np.bincount(mat.T[32])
 				p_c_0 = 1.0*pre_split_bins[0]/(pre_split_bins[0] + pre_split_bins[1])
 				p_c_1 = 1.0*pre_split_bins[1]/(pre_split_bins[0] + pre_split_bins[1]) 
-				print "pre_split_bins: " + str(pre_split_bins)
 				H_S = -1* p_c_0 * log(p_c_0,2) + -1 * p_c_1 * log(p_c_1,2)
 				H_S_R = 0
 				H_S_L = 0
@@ -77,9 +73,11 @@ class Tree:
 			if np.average(elements.T[32]) > 0.5:
 				return Tree(1, 0, None, None)
 			return Tree(0,0,None,None)
-		#print feature, split
 		#print np.unique(X_1.T[feature])
 		#print np.unique(X_2.T[feature])
 		#print "@@@@@@@@"
 		temp = Tree(1,2,3,4)
-		return Tree(feature, split, temp.build_tree(X_1), temp.build_tree(X_2))	
+		left = temp.build_tree(X_1)
+		right = temp.build_tree(X_2)
+		print feature, split
+		return Tree(feature, split, left, right)	
