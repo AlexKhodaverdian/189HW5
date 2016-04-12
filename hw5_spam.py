@@ -1,9 +1,11 @@
 from scipy.io import loadmat
+from sklearn.feature_extraction import DictVectorizer
 from numpy import array
 import matplotlib.pyplot as plt
 import numpy as np
 from math import log
 import random
+import csv
 
 train_set = loadmat(file_name="spam-dataset/spam_data.mat")
 labels = train_set['training_labels'].ravel()
@@ -107,4 +109,12 @@ def kaggle_spam_regTree_csv():
 	print "Id,Category"
 	for i in range(0,X.shape[0]):
 		print str(i+1)+ ","  + str(lookup(t,X[i]))
-kaggle_spam_regTree_csv()
+#kaggle_spam_regTree_csv()
+D = []
+with open('census_data/train_data.csv') as csvfile:
+	reader = csv.DictReader(csvfile)
+	for row in reader:
+		D.append(row)
+v = DictVectorizer()
+R = v.fit_transform(D)
+
