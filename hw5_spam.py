@@ -27,7 +27,7 @@ class Tree:
 
 	def build_tree(self, elements):
 		if 0 in np.bincount(elements.T[32]) or len(np.bincount(elements.T[32])) == 1:
-			print "=============END REACHED=========="
+		#	print "=============END REACHED=========="
 			return Tree(elements.T[32][0], 0, None, None)
 		feature, split = -1,-1
 		info = -10000000
@@ -79,7 +79,7 @@ class Tree:
 		temp = Tree(1,2,3,4)
 		left = temp.build_tree(X_1)
 		right = temp.build_tree(X_2)
-		print feature, split
+		#print feature, split
 		return Tree(feature, split, left, right)	
 
 def lookup(tree, item):
@@ -103,4 +103,8 @@ def validation_spam_regTree():
 
 def kaggle_spam_regTree_csv():
 	t = Tree(1,2,3,4).build_tree(X_p)
-	
+	X = train_set['test_data']
+	print "Id,Category"
+	for i in range(0,X.shape[0]):
+		print str(i+1)+ ","  + str(lookup(t,X[i]))
+kaggle_spam_regTree_csv()
