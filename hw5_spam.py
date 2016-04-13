@@ -1,5 +1,6 @@
 from scipy.io import loadmat
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.preprocessing import Imputer
 from numpy import array
 import matplotlib.pyplot as plt
 import numpy as np
@@ -111,10 +112,126 @@ def kaggle_spam_regTree_csv():
 		print str(i+1)+ ","  + str(lookup(t,X[i]))
 #kaggle_spam_regTree_csv()
 D = []
+labels = []
 with open('census_data/train_data.csv') as csvfile:
 	reader = csv.DictReader(csvfile)
-	for row in reader:
-		D.append(row)
-v = DictVectorizer()
-R = v.fit_transform(D)
 
+	for row in reader:
+		labels.append(row['label'])
+		row.pop('label', None)
+		row.pop('fnlwgt', None)
+		row.pop('education-num', None)
+		for key,item in row.items():
+			if item == '?':
+				row[key] = np.nan
+		D.append(row)
+labels = np.array(labels)
+v = DictVectorizer(sparse=False)
+R = v.fit_transform(D)
+print R.shape
+I = Imputer()
+R = I.fit_transform(R)
+R_p = np.concatenate((R,labels[:,None]), 1)
+D = []
+with open('census_data/test_data.csv') as csvfile:
+	reader = csv.DictReader(csvfile)
+
+	for row in reader:
+		row.pop('fnlwgt', None)
+		row.pop('education-num', None)
+		for key,item in row.items():
+			if item == '?':
+				row[key] = np.nan
+		D.append(row)
+L = v.transform(D)
+I = Imputer()
+L_p = I.fit_transform(L)
+class Tree2:
+	def __init__(self, feature, split, left_node, right_node):
+		self.feature = feature
+		self.split = split
+		self.left_node = left_node
+		self.right_node = right_node
+
+
+	def build_tree(self, elements):
+		print elements.shape
+		if 0 in np.bincount(elements.T[elements.shape[1]-1]) or len(np.bincount(elements.T[elements.shape[1]-1])) == 1:
+		#	print "=============END REACHED=========="
+			return Tree2(elements.T[elements.shape[1]-1][0], 0, None, None)
+		feature, split = -1,-1
+		info = -10000000
+		X_1, X_2 = None,None
+		for i in range(0,elements.shape[1]-1):
+			mat = elements[elements[:,i].argsort()]
+			uniq = np.unique(mat.T[i])
+			for j in range(0,len(uniq)-1):
+				res = np.nonzero(mat.T[i] == uniq[j])
+				last_index = res[0][len(res[0])-1]
+				split1,split2 = mat[:last_index+1], mat[last_index+1:]
+				count1 = np.bincount(split1.T[elements.shape[1]-1])
+				count2 = np.bincount(split2.T[elements.shape[1]-1])
+				total = 0
+				pre_split_bins = np.bincount(mat.T[elements.shape[1]-1])
+				p_c_0 = 1.0*pre_split_bins[0]/(pre_split_bins[0] + pre_split_bins[1])
+				p_c_1 = 1.0*pre_split_bins[1]/(pre_split_bins[0] + pre_split_bins[1]) 
+				H_S = -1* p_c_0 * log(p_c_0,2) + -1 * p_c_1 * log(p_c_1,2)
+				H_S_R = 0
+				H_S_L = 0
+				if len(count1) != 1 and count1[0] != 0 and count1[1] != 0:
+					p_c_0 = 1.0*count1[0]/(count1[0]+count1[1])
+					p_c_1 = 1.0*count1[1]/(count1[0]+count1[1])
+					H_S_L = -1* p_c_0 * log(p_c_0,2) + -1 * p_c_1 * log(p_c_1,2)
+				if len(count2) != 1 and count2[0] != 0 and count2[1] != 0:
+					p_c_0 = 1.0*count2[0]/(count2[0]+count2[1])
+					p_c_1 = 1.0*count2[1]/(count2[0]+count2[1])
+					H_S_R = -1* p_c_0 * log(p_c_0,2) + -1 * p_c_1 * log(p_c_1,2)
+				H_SS = 1.0* (len(split1) * H_S_L + len(split2) * H_S_R)/(len(split1) + len(split2))
+			#	print count1, count2
+			#	print H_S
+			#	print H_S_R
+			#	print H_S_L
+			#	print H_SS
+			#	print "------------"
+				if info < H_S - H_SS:
+					info = H_S - H_SS
+					feature = i
+					split = uniq[j]
+					X_1 = split1
+					X_2 = split2
+		if feature == -1:
+			if np.average(elements.T[elements.shape[1]-1]) > 0.5:
+				return Tree2(1, 0, None, None)
+			return Tree2(0,0,None,None)
+		#print np.unique(X_1.T[feature])
+		#print np.unique(X_2.T[feature])
+		#print "@@@@@@@@"
+		temp = Tree2(1,2,3,4)
+		left = temp.build_tree(X_1)
+		right = temp.build_tree(X_2)
+		#print feature, split
+		return Tree2(feature, split, left, right)	
+
+def validation_census_regTree():
+	R_pp = np.int64(R_p)
+	np.random.shuffle(R_pp)
+	train = R_pp[0:5000]
+	validation = R_pp[25000:]
+	t = Tree2(1,2,3,4).build_tree(train)
+	correct = 0
+	total = 0
+	for el in validation:
+		total +=1 
+		correct += (lookup(t,el) == el[32])
+	print correct, total
+#validation_census_regTree()
+
+def kaggle_census_regTree_csv():
+	R_pp = np.int64(R_p)
+	np.random.shuffle(R_pp)
+	t = Tree2(1,2,3,4).build_tree(R_pp[0:10000])
+	print "Id,Category"
+	for i in range(0,L_p.shape[0]):
+		print str(i+1)+ ","  + str(lookup(t,L_p[i]))
+	return t
+M = kaggle_census_regTree_csv()
