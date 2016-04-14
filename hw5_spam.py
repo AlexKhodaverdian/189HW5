@@ -344,7 +344,16 @@ def validation_spam_forestTree():
 		total +=1 
 	print correct, total
 	print "Validation Rate: " + str(correct*1.0/total)
-
+	d = {}
+	for i in range(0,500):
+		if (forest[i].feature,forest[i].split) in d:
+			d[(forest[i].feature,forest[i].split)] += 1
+		else:
+			d[(forest[i].feature,forest[i].split)] = 1
+	resulting_features = sorted(d.items(),key=lambda x: x[1], reverse=True)[:3]	
+	print "1) Feature: " + str(resulting_features[0][0][0]) + " Split: " + str(resulting_features[0][0][1]) + " Occurences: " + str(resulting_features[0][1])
+	print "2) Feature: " + str(resulting_features[1][0][0]) + " Split: " + str(resulting_features[1][0][1]) + " Occurences: " + str(resulting_features[1][1])
+	print "3) Feature: " + str(resulting_features[2][0][0]) + " Split: " + str(resulting_features[2][0][1]) + " Occurences: " + str(resulting_features[2][1])
 def kaggle_spam_forestTree_csv():
 	forest = []
 	for i in range(0,100):
@@ -430,7 +439,7 @@ def validation_census_forestTree():
 	train = R_pp[0:3000]
 	validation = R_pp[25000:]
 	forest = []
-	for i in range(0,25):
+	for i in range(0,100):
 		forest.append(Tree4(1,2,3,4).build_tree(train))
 		print i
 	correct = 0
@@ -438,13 +447,23 @@ def validation_census_forestTree():
 	for el in validation:
 		total +=1 
 		guess = []
-		for i in range(0,25):
+		for i in range(0,100):
 			guess.append(lookup(forest[i],el))
 		data = Counter(guess)
 		mode = data.most_common(1)[0][0]  # Returns the highest occurring item
 		correct += (mode == el[488])
 	print correct, total
 	print "Validation Rate: " + str(correct*1.0/total)
+	d = {}
+	for i in range(0,100):
+		if (forest[i].feature,forest[i].split) in d:
+			d[(forest[i].feature,forest[i].split)] += 1
+		else:
+			d[(forest[i].feature,forest[i].split)] = 1
+	resulting_features = sorted(d.items(),key=lambda x: x[1], reverse=True)[:3]	
+	print "1) Feature: " + str(v.feature_names_[resulting_features[0][0][0]]) + " Occurences: " + str(resulting_features[0][1])
+	print "2) Feature: " + str(v.feature_names_[resulting_features[1][0][0]]) + " Occurences: " + str(resulting_features[1][1])
+	print "3) Feature: " + str(v.feature_names_[resulting_features[2][0][0]]) + " Occurences: " + str(resulting_features[2][1])
 	
 
 def kaggle_census_forestTree_csv():
@@ -463,9 +482,9 @@ def kaggle_census_forestTree_csv():
 		print str(i+1)+ ","  + str(mode)
 #validation_spam_regTree()
 #kaggle_spam_regTree_csv()
-validation_census_regTree()
+#validation_census_regTree()
 #kaggle_census_regTree_csv()
 #validation_spam_forestTree()
 #kaggle_spam_forestTree_csv()
-#validation_census_forestTree()
+validation_census_forestTree()
 #kaggle_census_forestTree_csv()
